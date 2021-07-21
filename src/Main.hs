@@ -57,18 +57,19 @@ checkCut ws c =
     prev = prevColor ws
 
 
-defuse :: Wires -> IO String
-defuse ws
-  | all (>0) ws = return "SUCCESS"
+defuse :: Wires -> Bool -> IO String
+defuse ws first
+  | length [w | w <- ws, w > 0] >= 4 = return "SUCCESS"
   | otherwise   = do
+      reportWires ws
       putStrLn "Cut a wire: "
       input <- getLine
 
       let color = colorFromString input
-          valid = checkCut ws color
+          valid = if first then True else checkCut ws color
 
       if valid
-         then defuse (applyCut ws color)
+         then defuse (applyCut ws color) False
          else (return "BOOM!!!")
 
 
@@ -84,7 +85,18 @@ colorFromString s =
     _        -> error (s ++ " does not correspond with a color")
 
 
+reportWires :: Wires -> IO ()
+reportWires ws = putStrLn $
+  "Black  - " <> status (head ws) <> "\n" <>
+  "White  - " <> status (ws!!1)   <> "\n" <>
+  "Orange - " <> status (ws!!2)   <> "\n" <>
+  "Red    - " <> status (ws!!3)   <> "\n" <>
+  "Green  - " <> status (ws!!4)   <> "\n" <>
+  "Purple - " <> status (ws!!5)   <> "\n"
+  where
+    status = \w -> if w > 0 then "Cut" else "Uncut"
+
 main :: IO ()
 main = do
-  result <- defuse [0,0,0,0,0,0]
+  result <- defuse [0,0,0,0,0,0] True
   putStrLn result
