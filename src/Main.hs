@@ -57,13 +57,19 @@ checkCut ws c =
     prev = prevColor ws
 
 
-defuse :: Wires -> [WireColor] -> String
-defuse [] _ = "SUCCESS"
-defuse _ [] = "SUCCESS"
-defuse [0,0,0,0,0,0] (i:is) = defuse (applyCut [0,0,0,0,0,0] i) is
-defuse ws (i:is)
-  | checkCut ws i = defuse (applyCut ws i) is
-  | otherwise     = "BOOM!!!"
+defuse :: Wires -> IO String
+defuse ws
+  | all (>0) ws = return "SUCCESS"
+  | otherwise   = do
+      putStrLn "Cut a wire: "
+      input <- getLine
+
+      let color = colorFromString input
+          valid = checkCut ws color
+
+      if valid
+         then defuse (applyCut ws color)
+         else (return "BOOM!!!")
 
 
 colorFromString :: String -> WireColor
@@ -80,8 +86,5 @@ colorFromString s =
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let spaceDelimited = spaceDelimit (head args)
-  putStrLn $ defuse [0,0,0,0,0,0] (map colorFromString (words spaceDelimited))
-  where
-    spaceDelimit = map (\c -> if c == ',' then ' ' else c)
+  result <- defuse [0,0,0,0,0,0]
+  putStrLn result
