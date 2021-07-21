@@ -17,17 +17,19 @@ maximum' (x:xs) = x `max` (maximum' xs)
 
 
 applyCut :: Wires -> WireColor -> Wires
-applyCut ws col =
-  case col of
-    Black ->  next:(tail ws)
-    White ->  head ws:next:(drop 2 ws)
-    Orange -> (take 2 ws) ++ (next:drop 3 ws)
-    Red ->    (take 3 ws) ++ (next:drop 4 ws)
-    Green ->  (take 4 ws) ++ (next:drop 5 ws)
-    Purple -> (take 5 ws) ++ [next]
+applyCut ws col = (uncurry apply) positions
   where
     previous  = maximum' ws
     next = previous + 1
+    apply = \t d -> (take t ws) ++ [next] ++ (drop d ws)
+    positions =
+      case col of
+        Black ->  (0,1)
+        White ->  (1,2)
+        Orange -> (2,3)
+        Red ->    (3,4)
+        Green ->  (4,5)
+        Purple -> (5,6)
 
 
 prevColor :: Wires -> WireColor
