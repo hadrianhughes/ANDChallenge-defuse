@@ -1,6 +1,7 @@
 module Main where
 
 import Data.List
+import System.Environment
 
 
 data WireColor = Black | White | Orange | Red | Green | Purple deriving (Show, Eq)
@@ -56,14 +57,31 @@ checkCut ws c =
     prev = prevColor ws
 
 
-defuse :: Wires -> [WireColor] -> Bool
-defuse [] _ = True
-defuse _ [] = True
+defuse :: Wires -> [WireColor] -> String
+defuse [] _ = "SUCCESS"
+defuse _ [] = "SUCCESS"
 defuse [0,0,0,0,0,0] (i:is) = defuse (applyCut [0,0,0,0,0,0] i) is
 defuse ws (i:is)
   | checkCut ws i = defuse (applyCut ws i) is
-  | otherwise     = False
+  | otherwise     = "BOOM!!!"
+
+
+colorFromString :: String -> WireColor
+colorFromString s =
+  case s of
+    "black" ->  Black
+    "white" ->  White
+    "orange" -> Orange
+    "red" ->    Red
+    "green" ->  Green
+    "purple" -> Purple
+    _        -> error (s ++ " does not correspond with a color")
 
 
 main :: IO ()
-main = putStrLn $ if defuse [0,0,0,0,0,0] [Red, Green, Purple, White] then "SUCCESS" else "BOOM!!"
+main = do
+  args <- getArgs
+  let spaceDelimited = spaceDelimit (head args)
+  putStrLn $ defuse [0,0,0,0,0,0] (map colorFromString (words spaceDelimited))
+  where
+    spaceDelimit = map (\c -> if c == ',' then ' ' else c)
